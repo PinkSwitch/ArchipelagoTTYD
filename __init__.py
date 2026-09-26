@@ -410,6 +410,19 @@ class TTYDWorld(World):
         filler_items = []
         self.limited_state = CollectionState(self.multiworld)
 
+        trouble_items = frozenset({
+            "House Key", "Box", "Walrus Whiskers", "Courage Shell Pack", "Battle Trunk Pack",
+            "Elusive Badge", "Routing Slip", "Wedding Ring", "Present", "Package",
+            "Wrestling Mag",
+        })
+
+        logical_trouble_items = frozenset({
+            "Life Shroom", "L Emblem", "Golden Leaf", "Mystic Egg", "Keel Mango", "Honey Candy"
+        })
+
+        logical_food = frozenset({"Golden Leaf", "Mystic Egg", "Keel Mango", "Honey Candy", "Life Shroom",
+                                  "Cake Mix", "Mushroom", "Honey Syrup"})
+
         precollected_item_names = [item.name for item in self.multiworld.precollected_items[self.player]]
 
         item_names = [item.item_name for item in itemList for _ in
@@ -425,6 +438,8 @@ class TTYDWorld(World):
                     item.classification = ItemClassification.filler
                 else:
                     single_progression_seen.add(item_name)
+            elif item_name in logical_trouble_items and self.options.troublesanity:
+                item.classification = ItemClassification.progression
             if item_name in precollected_item_names:
                 precollected_item_names.remove(item_name)
                 continue
@@ -435,6 +450,10 @@ class TTYDWorld(World):
                 useful_items.append(item)
             else:
                 filler_items.append(item)
+
+        for item in required_items:
+            if item.name in trouble_items and not self.options.troublesanity:
+                required_items.remove(item)
 
         if not self.options.keysanity:
             for chapter in range(1, 9):
